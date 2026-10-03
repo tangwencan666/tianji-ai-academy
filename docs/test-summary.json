@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-03",
+  "backendSuites": [
+    {
+      "suite": "com.tang.tianji.PolicyUnitTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "suite": "com.tang.tianji.SecurityIntegrationTest",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "suite": "com.tang.tianji.ToolBudgetTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "httpSmokeChecks": 21,
+  "httpSmokeDatabase": "H2 local profile",
+  "frontendBuild": "passed",
+  "npmAuditVulnerabilities": 0,
+  "realMySqlRedisIntegration": "not verified: Docker WSL engine failed",
+  "realModelIntegration": "not verified: no credentials"
+}

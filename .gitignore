@@ -1,0 +1,14 @@
+target/
+node_modules/
+dist/
+.env
+*.log
+.idea/
+.DS_Store
+work/
+
+.env.*
+!.env.example
+*.env
+*.h2.db
+*.mv.db

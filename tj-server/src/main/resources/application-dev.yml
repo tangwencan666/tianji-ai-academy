@@ -1,0 +1,6 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+app:
+  dev-seed: ${DEV_SEED:false}

@@ -1,0 +1,356 @@
+[
+  {
+    "title": "Java基础：从语言到后端实践",
+    "category": "Java",
+    "lessons": [
+      {
+        "title": "变量与类型",
+        "content": "# 变量与类型\n\n局部变量使用前必须初始化。基本类型保存值，引用类型保存对象引用；把一个引用赋给另一个变量不会复制对象。int 是 32 位有符号整数，整数除法会截断小数。金额计算通常使用 BigDecimal，并明确舍入策略。\n\n例：int a=5/2 得到2；double b=5.0/2 得到2.5。String 不可变，拼接会得到新的字符串值。比较字符串内容使用 equals，避免把 == 当作内容比较。\n\n练习：解释为什么两个内容相同的 new String 对象用 == 比较可能为 false。\n",
+        "questions": [
+          {
+            "stem": "Java 中比较字符串内容应该使用什么？",
+            "options": [
+              "equals",
+              "==",
+              "sleep",
+              "start"
+            ],
+            "answer": "A",
+            "explanation": "equals 比较内容，== 比较引用是否指向同一个对象。"
+          },
+          {
+            "stem": "变量与类型：以下哪项实践更合理？",
+            "options": [
+              "局部变量使用前必须初始化。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "局部变量使用前必须初始化。"
+          }
+        ]
+      },
+      {
+        "title": "流程控制",
+        "content": "# 流程控制\n\nif/else 用于条件分支；switch 用于按离散值分派；for 与 while 用于重复执行。break 退出当前循环，continue 跳过本轮剩余语句。循环边界应覆盖空集合、单元素和最后一个元素。\n\n例：for(int i=0;i<items.size();i++) 遍历合法索引。把 < 写为 <= 会访问不存在的尾部位置。嵌套循环的内层 break 不会退出外层循环。\n\n实践：写函数累加1到n，并检查 n=0 和 n=1。用测试说明 continue 不等于结束循环。\n",
+        "questions": [
+          {
+            "stem": "continue 在循环中的作用是什么？",
+            "options": [
+              "退出整个方法",
+              "跳过本轮剩余语句",
+              "退出程序",
+              "暂停线程"
+            ],
+            "answer": "B",
+            "explanation": "continue 开始下一轮循环；break 结束所在循环。"
+          },
+          {
+            "stem": "流程控制：以下哪项实践更合理？",
+            "options": [
+              "if/else 用于条件分支；switch 用于按离散值分派；for 与 while 用于重复执行。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "if/else 用于条件分支；switch 用于按离散值分派；for 与 while 用于重复执行。"
+          }
+        ]
+      },
+      {
+        "title": "集合框架",
+        "content": "# 集合框架\n\nArrayList 以可扩容数组存储引用，按索引访问通常为 O(1)，中间插入删除需要移动元素。LinkedList 是双向链表，按索引访问通常为 O(n)；已持有迭代器位置时局部插入删除无需移动其他元素，但查找位置仍有成本。不能简单认为 LinkedList 总比 ArrayList 插入快。\n\nHashMap 不是线程安全容器。并发修改没有同步时可能出现数据竞争、可见性问题和丢失更新；不要把旧版本扩容问题当作所有版本的唯一原因。ConcurrentHashMap 提供并发映射操作，但 get 后 put 是两个调用，组合不自动原子。计数可用 merge(key,1,Integer::sum)。\n\nSet 用于去重，Map 用于键值映射。哈希键的 equals 与 hashCode 必须保持一致；作为键后修改参与哈希的字段可能导致查找失败。\n\n练习：为并发单词计数选择合适容器，比较随机读取一万次时两种 List 的成本。\n",
+        "questions": [
+          {
+            "stem": "高频按索引读取时通常优先选择哪个容器？",
+            "options": [
+              "LinkedList",
+              "HashSet",
+              "ArrayList",
+              "TreeMap"
+            ],
+            "answer": "C",
+            "explanation": "ArrayList 数组支持常数级随机访问；LinkedList 需要遍历节点。"
+          },
+          {
+            "stem": "集合框架：以下哪项实践更合理？",
+            "options": [
+              "ArrayList 以可扩容数组存储引用，按索引访问通常为 O(1)，中间插入删除需要移动元素。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "ArrayList 以可扩容数组存储引用，按索引访问通常为 O(1)，中间插入删除需要移动元素。"
+          }
+        ]
+      },
+      {
+        "title": "异常处理",
+        "content": "# 异常处理\n\n异常让失败从正常返回路径中分离。受检异常需要捕获或声明；RuntimeException 不强制声明。try-with-resources 会关闭实现 AutoCloseable 的资源。finally 通常执行清理，但不要在其中 return，否则可能覆盖原返回值或异常。\n\n业务层可把不存在、权限不足、状态冲突转换成稳定错误码。接口不应向用户返回数据库密码、SQL堆栈或模型密钥。只捕获能够处理的异常，避免 catch 后返回伪成功。\n\n练习：模拟文件打开后解析失败，验证资源仍关闭。事务中抛出运行时异常时检查修改是否回滚。\n",
+        "questions": [
+          {
+            "stem": "管理 AutoCloseable 资源适合使用什么？",
+            "options": [
+              "无限循环",
+              "try-with-resources",
+              "空 catch",
+              "System.exit"
+            ],
+            "answer": "B",
+            "explanation": "try-with-resources 负责关闭资源，减少泄漏风险。"
+          },
+          {
+            "stem": "异常处理：以下哪项实践更合理？",
+            "options": [
+              "异常让失败从正常返回路径中分离。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "异常让失败从正常返回路径中分离。"
+          }
+        ]
+      },
+      {
+        "title": "多线程",
+        "content": "# 多线程\n\n线程共享堆对象，但各自拥有调用栈。数据竞争发生在缺乏同步的并发冲突访问中。synchronized 提供互斥与可见性；volatile 提供可见性等内存语义，却不能让 count++ 自动原子。可以使用 AtomicInteger.incrementAndGet。\n\n线程池限制并发数量，队列也必须有界，避免请求无限堆积。本项目 AI 使用有界线程池和超时，中断只表达取消请求，网络客户端也必须配置超时。不要把 ThreadLocal 用户上下文直接假定为异步线程可见，应显式传递并在 finally 清理。\n\n练习：比较 volatile int 自增与 AtomicInteger 自增的多线程结果。\n",
+        "questions": [
+          {
+            "stem": "哪个操作适合线程安全的单个计数自增？",
+            "options": [
+              "volatileCount++",
+              "普通 int++",
+              "HashMap.put",
+              "AtomicInteger.incrementAndGet"
+            ],
+            "answer": "D",
+            "explanation": "原子类提供原子更新，volatile 自增仍包含读改写多个步骤。"
+          },
+          {
+            "stem": "多线程：以下哪项实践更合理？",
+            "options": [
+              "线程共享堆对象，但各自拥有调用栈。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "线程共享堆对象，但各自拥有调用栈。"
+          }
+        ]
+      },
+      {
+        "title": "Spring 基础",
+        "content": "# Spring 基础\n\nSpring 容器管理对象与依赖，构造器注入使依赖显式可测试。Controller 校验请求并调用 Service；Service 组织业务与事务；Mapper 访问数据库。\n\n@Transactional 常由代理拦截外部调用实现；同对象内部自调用可能绕过代理。运行时异常默认触发回滚，应根据业务明确事务边界。数据库事务不能自动撤销已经完成的外部模型调用，通常先调用模型并校验，再在短事务中保存结果。\n\n本项目权限来自 JWT 验证后的数据库用户，禁止信任前端或模型给出的角色与用户编号。练习：让课程与课时插入中途失败，观察原子性。\n",
+        "questions": [
+          {
+            "stem": "同对象内部直接调用事务方法可能发生什么？",
+            "options": [
+              "绕过代理事务拦截",
+              "自动创建新数据库",
+              "关闭容器",
+              "提高隔离级别"
+            ],
+            "answer": "A",
+            "explanation": "基于代理的事务需要调用经过代理，自调用可能不生效。"
+          },
+          {
+            "stem": "Spring 基础：以下哪项实践更合理？",
+            "options": [
+              "Spring 容器管理对象与依赖，构造器注入使依赖显式可测试。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "Spring 容器管理对象与依赖，构造器注入使依赖显式可测试。"
+          }
+        ]
+      },
+      {
+        "title": "MySQL 与索引",
+        "content": "# MySQL 与索引\n\nInnoDB 用事务维护一组修改的原子性。唯一约束在并发时比先查再写更可靠。复合索引按列顺序组织，查询应结合过滤与排序分析执行计划，而不是给每列盲目加索引。\n\n学习记录适合(user_id,lesson_id)唯一约束；查询最近学习事件可用(user_id,create_time)索引。SELECT FOR UPDATE 在事务内锁定目标记录，协调同一用户的考试开始和提交。锁顺序应一致以减少死锁。\n\nFlyway 保存迁移版本和校验和；已应用迁移不要改写，新增 V3 等脚本升级。练习：解释为什么数据库唯一键能阻止重复学习记录，而前端按钮禁用不能。\n",
+        "questions": [
+          {
+            "stem": "阻止并发重复插入学习记录最可靠的约束是什么？",
+            "options": [
+              "前端隐藏按钮",
+              "唯一约束",
+              "只加日志",
+              "延时1秒"
+            ],
+            "answer": "B",
+            "explanation": "唯一约束在数据库并发写入层面生效。"
+          },
+          {
+            "stem": "MySQL 与索引：以下哪项实践更合理？",
+            "options": [
+              "InnoDB 用事务维护一组修改的原子性。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "InnoDB 用事务维护一组修改的原子性。"
+          }
+        ]
+      },
+      {
+        "title": "Redis 缓存",
+        "content": "# Redis 缓存\n\nCache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。写路径在数据库修改成功后失效缓存。缓存是加速层，不能替代成绩与权限等事实来源。\n\n键应带项目和业务前缀，本项目使用 tianji-ai-academy::categories::。TTL 限制陈旧数据时间，不能单独解决并发读写下的一致性。高一致性场景需要版本或事件机制。缓存不可用可回源，但必须观测告警，不能把降级当命中成功。\n\n不要在共享 Redis 执行 FLUSHALL；测试只操作自己命名空间的键。练习：观察一次 miss、一次 hit，修改分类后确认键失效。\n",
+        "questions": [
+          {
+            "stem": "Cache Aside 读取缓存未命中后应做什么？",
+            "options": [
+              "返回编造数据",
+              "停止数据库",
+              "查询数据库并回填缓存",
+              "清空全部Redis"
+            ],
+            "answer": "C",
+            "explanation": "缓存未命中时从真实数据库读取，再按TTL缓存。"
+          },
+          {
+            "stem": "Redis 缓存：以下哪项实践更合理？",
+            "options": [
+              "Cache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "Cache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Spring Boot 服务设计",
+    "category": "Spring",
+    "lessons": [
+      {
+        "title": "Spring 基础",
+        "content": "# Spring 基础\n\nSpring 容器管理对象与依赖，构造器注入使依赖显式可测试。Controller 校验请求并调用 Service；Service 组织业务与事务；Mapper 访问数据库。\n\n@Transactional 常由代理拦截外部调用实现；同对象内部自调用可能绕过代理。运行时异常默认触发回滚，应根据业务明确事务边界。数据库事务不能自动撤销已经完成的外部模型调用，通常先调用模型并校验，再在短事务中保存结果。\n\n本项目权限来自 JWT 验证后的数据库用户，禁止信任前端或模型给出的角色与用户编号。练习：让课程与课时插入中途失败，观察原子性。\n",
+        "questions": [
+          {
+            "stem": "同对象内部直接调用事务方法可能发生什么？",
+            "options": [
+              "绕过代理事务拦截",
+              "自动创建新数据库",
+              "关闭容器",
+              "提高隔离级别"
+            ],
+            "answer": "A",
+            "explanation": "基于代理的事务需要调用经过代理，自调用可能不生效。"
+          },
+          {
+            "stem": "Spring 基础：以下哪项实践更合理？",
+            "options": [
+              "Spring 容器管理对象与依赖，构造器注入使依赖显式可测试。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "Spring 容器管理对象与依赖，构造器注入使依赖显式可测试。"
+          }
+        ]
+      },
+      {
+        "title": "MySQL 与索引",
+        "content": "# MySQL 与索引\n\nInnoDB 用事务维护一组修改的原子性。唯一约束在并发时比先查再写更可靠。复合索引按列顺序组织，查询应结合过滤与排序分析执行计划，而不是给每列盲目加索引。\n\n学习记录适合(user_id,lesson_id)唯一约束；查询最近学习事件可用(user_id,create_time)索引。SELECT FOR UPDATE 在事务内锁定目标记录，协调同一用户的考试开始和提交。锁顺序应一致以减少死锁。\n\nFlyway 保存迁移版本和校验和；已应用迁移不要改写，新增 V3 等脚本升级。练习：解释为什么数据库唯一键能阻止重复学习记录，而前端按钮禁用不能。\n",
+        "questions": [
+          {
+            "stem": "阻止并发重复插入学习记录最可靠的约束是什么？",
+            "options": [
+              "前端隐藏按钮",
+              "唯一约束",
+              "只加日志",
+              "延时1秒"
+            ],
+            "answer": "B",
+            "explanation": "唯一约束在数据库并发写入层面生效。"
+          },
+          {
+            "stem": "MySQL 与索引：以下哪项实践更合理？",
+            "options": [
+              "InnoDB 用事务维护一组修改的原子性。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "InnoDB 用事务维护一组修改的原子性。"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "并发与缓存工程",
+    "category": "后端工程",
+    "lessons": [
+      {
+        "title": "多线程",
+        "content": "# 多线程\n\n线程共享堆对象，但各自拥有调用栈。数据竞争发生在缺乏同步的并发冲突访问中。synchronized 提供互斥与可见性；volatile 提供可见性等内存语义，却不能让 count++ 自动原子。可以使用 AtomicInteger.incrementAndGet。\n\n线程池限制并发数量，队列也必须有界，避免请求无限堆积。本项目 AI 使用有界线程池和超时，中断只表达取消请求，网络客户端也必须配置超时。不要把 ThreadLocal 用户上下文直接假定为异步线程可见，应显式传递并在 finally 清理。\n\n练习：比较 volatile int 自增与 AtomicInteger 自增的多线程结果。\n",
+        "questions": [
+          {
+            "stem": "哪个操作适合线程安全的单个计数自增？",
+            "options": [
+              "volatileCount++",
+              "普通 int++",
+              "HashMap.put",
+              "AtomicInteger.incrementAndGet"
+            ],
+            "answer": "D",
+            "explanation": "原子类提供原子更新，volatile 自增仍包含读改写多个步骤。"
+          },
+          {
+            "stem": "多线程：以下哪项实践更合理？",
+            "options": [
+              "线程共享堆对象，但各自拥有调用栈。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "线程共享堆对象，但各自拥有调用栈。"
+          }
+        ]
+      },
+      {
+        "title": "Redis 缓存",
+        "content": "# Redis 缓存\n\nCache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。写路径在数据库修改成功后失效缓存。缓存是加速层，不能替代成绩与权限等事实来源。\n\n键应带项目和业务前缀，本项目使用 tianji-ai-academy::categories::。TTL 限制陈旧数据时间，不能单独解决并发读写下的一致性。高一致性场景需要版本或事件机制。缓存不可用可回源，但必须观测告警，不能把降级当命中成功。\n\n不要在共享 Redis 执行 FLUSHALL；测试只操作自己命名空间的键。练习：观察一次 miss、一次 hit，修改分类后确认键失效。\n",
+        "questions": [
+          {
+            "stem": "Cache Aside 读取缓存未命中后应做什么？",
+            "options": [
+              "返回编造数据",
+              "停止数据库",
+              "查询数据库并回填缓存",
+              "清空全部Redis"
+            ],
+            "answer": "C",
+            "explanation": "缓存未命中时从真实数据库读取，再按TTL缓存。"
+          },
+          {
+            "stem": "Redis 缓存：以下哪项实践更合理？",
+            "options": [
+              "Cache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。",
+              "不做任何校验即可上线",
+              "用固定结果替代真实执行",
+              "把所有错误吞掉"
+            ],
+            "answer": "A",
+            "explanation": "Cache Aside 的读路径是先查缓存，未命中回源数据库并写入带TTL缓存。"
+          }
+        ]
+      }
+    ]
+  }
+]

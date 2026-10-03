@@ -1,0 +1,52 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: tianji-ai-academy
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:tianji_ai_academy}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+  jackson:
+    time-zone: Asia/Shanghai
+  mvc:
+    async:
+      request-timeout: 90000
+  ai:
+    retry:
+      max-attempts: 1
+    openai:
+      api-key: ${AI_API_KEY:disabled}
+      base-url: ${AI_BASE_URL:https://api.deepseek.com}
+      chat:
+        options:
+          model: ${AI_MODEL:deepseek-chat}
+          temperature: 0.4
+          max-tokens: 4096
+      embedding:
+        api-key: ${EMBEDDING_API_KEY:disabled}
+        base-url: ${EMBEDDING_BASE_URL:https://api.openai.com}
+        options:
+          model: ${EMBEDDING_MODEL:text-embedding-3-small}
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+app:
+  jwt-secret: ${JWT_SECRET}
+  ai-enabled: ${AI_ENABLED:false}
+  embedding-model: ${EMBEDDING_MODEL:text-embedding-3-small}
+  zone: Asia/Shanghai
