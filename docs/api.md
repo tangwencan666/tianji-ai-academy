@@ -176,3 +176,9 @@ chapterId/lessonId可为null，若填写必须匹配本课程。资料不由后�
 | 422 | AI结构化结果未通过业务校验或无相关资料 |
 | 429 | AI并发已满或Nginx登录限流 |
 | 503/504 | AI未启用、模型失败或超时 |
+
+## 加强版补充
+
+`GET /api/wrong-questions/details`：本人历史错题详情，包含wrong/question/myAnswer/answerRecordId/knowledgePoints；考试进行中409。
+
+`GET /api/courses/{id}` 新增teacherName。Tutor SSE 新增answer事件（TutorAnswer）；正文在结构化验证后一次通过delta发送，原有status/sources/suggestions/done保持。

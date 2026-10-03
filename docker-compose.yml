@@ -25,7 +25,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-  server:
+  backend:
     build: .
     environment:
       SPRING_PROFILES_ACTIVE: production
@@ -37,25 +37,32 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set a random JWT_SECRET of at least 32 characters}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?Set administrator password}
       DEMO_DATA: false
-      AI_ENABLED: ${AI_ENABLED:false}
-      AI_API_KEY: ${AI_API_KEY:disabled}
-      AI_BASE_URL: ${AI_BASE_URL:https://api.deepseek.com}
-      AI_MODEL: ${AI_MODEL:deepseek-chat}
-      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:disabled}
-      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:https://api.openai.com}
-      EMBEDDING_MODEL: ${EMBEDDING_MODEL:text-embedding-3-small}
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_API_KEY: ${AI_API_KEY:-disabled}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.deepseek.com}
+      AI_MODEL: ${AI_MODEL:-deepseek-chat}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-disabled}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-https://api.openai.com}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
       TZ: Asia/Shanghai
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
-  web:
+  frontend:
     build: ./tj-web
+    depends_on:
+      - backend
+  nginx:
+    image: nginx:1.28-alpine
     ports:
       - "127.0.0.1:${WEB_PORT:-8088}:80"
+    volumes:
+      - ./deploy/gateway.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - server
+      - backend
+      - frontend
 volumes:
   mysql-data:
   redis-data:

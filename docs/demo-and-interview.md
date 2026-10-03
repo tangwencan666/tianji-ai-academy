@@ -1,3 +1,5 @@
+> 历史第一版说明；加强版当前结果请以 README、VERIFICATION、FINAL_REPORT 和 INTERVIEW 为准。
+
 # 演示与面试讲解
 
 ## 十分钟演示

@@ -46,6 +46,8 @@ class SecurityIntegrationTest {
   @Autowired AnswerRecordMapper answers;
   @Autowired ExamRecordMapper examRecords;
   @Autowired StudyPlanService plans;
+  @Autowired com.tang.tianji.ai.agent.LearningAgent agent;
+  @Autowired com.tang.tianji.ai.service.AiApplicationService aiApp;
   @MockitoBean EmbeddingModel embedding;
   @MockitoBean ChatModel model;
   User teacher, a, b;
@@ -449,5 +451,88 @@ class SecurityIntegrationTest {
                     .get("wrong_count"))
             .intValue());
     assertFalse(answers.courseWeakness(course.id).isEmpty());
+  }
+
+  @Test
+  void agentPersistsValidatedPlanUsingRealBusinessServices() throws Exception {
+    as(a);
+    learning.update(lesson.id, new Progress(0, 20, 0));
+    exams.practice(q.id, new Practice("A"));
+    var today = LocalDate.now(java.time.ZoneId.of("Asia/Shanghai"));
+    var draft =
+        new com.tang.tianji.vo.AiModels.PlanOutput(
+            "复习集合",
+            today.toString(),
+            today.plusDays(1).toString(),
+            120,
+            List.of(
+                new com.tang.tianji.vo.AiModels.PlanDay(
+                    today.toString(), List.of("集合"), List.of(lesson.id), 5, List.of("集合"), 60),
+                new com.tang.tianji.vo.AiModels.PlanDay(
+                    today.plusDays(1).toString(),
+                    List.of("集合复习"),
+                    List.of(lesson.id),
+                    5,
+                    List.of("集合"),
+                    60)));
+    when(model.call(any(Prompt.class)))
+        .thenReturn(
+            new ChatResponse(
+                List.of(new Generation(new AssistantMessage(json.writeValueAsString(draft))))));
+    var result = (Map<?, ?>) agent.run(new Plan(course.id, "复习集合", 2, 120));
+    var saved = (StudyPlan) result.get("plan");
+    assertEquals(a.id, saved.userId);
+    assertEquals(8, ((List<?>) result.get("steps")).size());
+    assertNotNull(plans.detail(saved.id));
+    as(b);
+    assertThrows(BusinessException.class, () -> plans.detail(saved.id));
+  }
+
+  @Test
+  void generatedQuestionUsesRagAndStaysDraft() throws Exception {
+    as(teacher);
+    rag.ingest(new Material(course.id, null, null, "集合", "test.md", "HashMap需要外部同步或使用并发映射"));
+    var draft =
+        new com.tang.tianji.vo.AiModels.GeneratedQuestions(
+            List.of(
+                new com.tang.tianji.vo.AiModels.GeneratedQuestion(
+                    "哪个集合适合并发？",
+                    "SINGLE",
+                    List.of("HashMap", "ConcurrentHashMap"),
+                    "B",
+                    "使用并发映射",
+                    "入门",
+                    "集合")));
+    when(model.call(any(Prompt.class)))
+        .thenReturn(
+            new ChatResponse(
+                List.of(new Generation(new AssistantMessage(json.writeValueAsString(draft))))));
+    var generated = (List<?>) aiApp.generate(new Generate(course.id, "集合", 1));
+    assertEquals("AI_GENERATED", ((Question) generated.get(0)).status);
+    assertThrows(
+        BusinessException.class,
+        () ->
+            exams.createExam(
+                new ExamInput(course.id, "拒绝未审题", 20, List.of(((Question) generated.get(0)).id))));
+  }
+
+  @Test
+  void weeklyReportFactsAreCurrentUserOnly() throws Exception {
+    as(a);
+    exams.practice(q.id, new Practice("B"));
+    as(b);
+    exams.practice(q.id, new Practice("A"));
+    as(a);
+    var report =
+        new com.tang.tianji.vo.AiModels.WeeklyLearningReport(
+            "示例模型总结", List.of(), List.of(), List.of(), List.of());
+    when(model.call(any(Prompt.class)))
+        .thenReturn(
+            new ChatResponse(
+                List.of(new Generation(new AssistantMessage(json.writeValueAsString(report))))));
+    var result = (Map<?, ?>) aiApp.report();
+    var facts = (Map<?, ?>) result.get("facts");
+    assertEquals(1, facts.get("answerCount"));
+    assertEquals(100L, facts.get("accuracy"));
   }
 }

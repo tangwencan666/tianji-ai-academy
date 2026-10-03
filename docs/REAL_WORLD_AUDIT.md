@@ -19,3 +19,14 @@
 检索 TODO/FIXME/Fake/Stub/hardcoded/UnsupportedOperationException/@Disabled 未发现生产占位实现。Mock 主要来自测试。H2 出现在测试/local 配置及说明。return null 无生产业务占位；Result.ok(null) 表示操作成功无返回体。没有固定考试成绩或绕过数据库的学习数据接口。
 
 本机已通过环境变量连接 MySQL 8.0.44，创建独立空库 tianji_ai_academy（迁移前业务表 0）。没有读取、修改其他项目数据库。Redis PING=PONG。环境未设置 AI_API_KEY/EMBEDDING_API_KEY，真实 AI 验证留待用户配置，其他任务继续。
+
+## 本轮处置结果
+
+- MySQL真实空库迁移V1/V2通过：23表（含Flyway）、82索引、22外键、9唯一约束。3角色通过真实登录；3课程/12课时/24题/3考试。
+- Redis3.0.504回填TTL300、重复读取TTL298、课程修改失效和新分类回填通过；不需要更换服务。
+- 掌握度N+1改批量关联，教师统计改聚合SQL；H2别名大小写差异在回归中发现并修复。
+- 七个LearningTools及教师聚合查询在真实MySQL读取通过；Tools模型选择仍待真实API。
+- TutorAnswer及所有结构化输出补Bean Validation；正文JSON校验后再呈现，明确不伪称逐token输出。
+- 错题历史答案、教师信息、首页我的课程与最近考试、学习页内嵌Tutor已补齐；仍保持13页面。
+- Compose默认变量语法原为Spring占位符形式，改为Compose的${VAR:-default}；五服务配置验证通过。Docker WSL引擎无法启动，容器运行未通过。
+- 无真实API Key，未写假Embedding或返回固定模型答案。详细边界见FINAL_REPORT。

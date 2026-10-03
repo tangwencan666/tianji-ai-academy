@@ -1,3 +1,5 @@
+> 历史第一版说明；加强版当前结果请以 README、VERIFICATION、FINAL_REPORT 和 INTERVIEW 为准。
+
 # 需求覆盖与后续路线
 
 ## 业务

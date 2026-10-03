@@ -83,6 +83,16 @@
     },
     {
       "method": "GET",
+      "path": "/wrong-questions/details",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/wrong-questions/details",
+      "status": 200
+    },
+    {
+      "method": "GET",
       "path": "/exams?courseId=1",
       "status": 200
     },
@@ -93,8 +103,13 @@
     },
     {
       "method": "GET",
-      "path": "/exam-records/3",
+      "path": "/exam-records/5",
       "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/wrong-questions/details",
+      "status": 409
     },
     {
       "method": "POST",
@@ -108,17 +123,17 @@
     },
     {
       "method": "POST",
-      "path": "/exam-records/3/submit",
+      "path": "/exam-records/5/submit",
       "status": 200
     },
     {
       "method": "POST",
-      "path": "/exam-records/3/submit",
+      "path": "/exam-records/5/submit",
       "status": 200
     },
     {
       "method": "GET",
-      "path": "/exam-records/3/answers",
+      "path": "/exam-records/5/answers",
       "status": 404
     },
     {
@@ -144,6 +159,16 @@
     {
       "method": "GET",
       "path": "/ai/report/weekly",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/ai/plans",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/ai/tutor/chat",
       "status": 503
     },
     {
@@ -177,7 +202,7 @@
       "status": 200
     }
   ],
-  "total": 34,
+  "total": 39,
   "result": "PASS",
   "ai": "Disabled, expected 503; no real provider validation"
 }
