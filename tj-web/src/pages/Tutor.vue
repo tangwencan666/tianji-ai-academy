@@ -48,7 +48,8 @@ async function send(text = input.value) {
         if (name === "status") status.value = value;
         if (name === "sources") item.sources = value;
         if (name === "suggestions") item.suggestions = value;
-        if (name === "error") item.error = value;
+        if (name === "error") { item.error = value; item.text = ""; }
+        if (name === "answer") item.text = value.answer;
         await nextTick();
         list.value?.scrollTo({
           top: list.value.scrollHeight,
@@ -130,7 +131,7 @@ onUnmounted(() => abort?.abort());
             <div class="sources" v-if="m.sources?.length">
             <small>检索到的课程资料 · 供核对</small>
             <details v-for="s in m.sources" :key="s.id">
-              <summary>[{{ s.id }}] {{ s.title }} · {{ s.source }}</summary>
+              <summary>[{{ s.id }}] {{ s.title }} · 课程 {{s.courseId}} / 章节 {{s.chapterId || '课程总览'}} · {{ s.source }}</summary>
               <p>{{ s.content }}</p>
             </details>
           </div>

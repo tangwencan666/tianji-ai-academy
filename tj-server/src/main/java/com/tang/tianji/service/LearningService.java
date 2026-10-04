@@ -99,12 +99,18 @@ public class LearningService {
   }
 
   public Map<String, Object> time() {
+    return time(null);
+  }
+
+  public Map<String, Object> time(Long course) {
+    if(course!=null) courses.access(course);
     long uid = UserContext.getCurrentUserId();
     var today = LocalDate.now(clock);
     var es =
         events.selectList(
             new QueryWrapper<LearningEvent>()
                 .eq("user_id", uid)
+                .eq(course!=null,"course_id",course)
                 .ge("create_time", today.minusDays(6).atStartOfDay()));
     int week = es.stream().mapToInt(e -> e.duration).sum();
     int day =

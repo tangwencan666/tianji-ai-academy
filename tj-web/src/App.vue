@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "./stores/auth";
+import AiProviderBadge from "./components/AiProviderBadge.vue";
 const route = useRoute(),
   router = useRouter(),
   auth = useAuth();
@@ -78,6 +79,7 @@ function logout() {
       <header>
         <span>{{ title }}</span>
         <div class="header-right">
+          <AiProviderBadge />
           <span class="quiet">持续学习，日有所进</span
           ><span class="dot"></span>个人学习空间
         </div>

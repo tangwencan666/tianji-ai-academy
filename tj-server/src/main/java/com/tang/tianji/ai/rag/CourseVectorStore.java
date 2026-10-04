@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CourseVectorStore {
   public record Source(
       long id,
+      long courseId,
       String title,
       String source,
       Long chapterId,
@@ -79,7 +80,7 @@ public class CourseVectorStore {
       k.content = text;
       k.embeddingModel = model;
       try {
-        k.embedding = json.writeValueAsString(embedding.embed(text));
+        k.embedding = json.writeValueAsString(embedding.embed(d.title()+"\n"+d.title()+"\n"+text));
       } catch (Exception e) {
         throw new BusinessException(503, "Embedding服务不可用，原资料保持不变");
       }
@@ -106,9 +107,9 @@ public class CourseVectorStore {
       try {
         float[] x = json.readValue(c.embedding, float[].class);
         double score = cosine(v, x);
-        if (score >= 0.25)
+        if (score >= 0.08)
           result.add(
-              new Source(c.id, c.title, c.source, c.chapterId, c.lessonId, score, c.content));
+              new Source(c.id, c.courseId, c.title, c.source, c.chapterId, c.lessonId, score, c.content));
       } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
         throw new BusinessException(503, "向量数据损坏，请重新导入");
       }

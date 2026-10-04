@@ -362,6 +362,28 @@ class SecurityIntegrationTest {
   }
 
   @Test
+  void tutorTimeoutAndUpstreamErrorsNeverEmitSuccessAndReleaseAdmission() throws Exception {
+    for (Throwable failure : List.of(new java.util.concurrent.TimeoutException(),
+        new org.springframework.web.client.HttpClientErrorException(
+            org.springframework.http.HttpStatus.PAYMENT_REQUIRED, "private-provider-payload"))) {
+      when(model.stream(any(Prompt.class))).thenReturn(Flux.error(failure));
+      var result=mvc.perform(post("/api/ai/tutor/chat")
+          .header("Authorization","Bearer "+ta).contentType("application/json")
+          .content(json.writeValueAsString(new Chat(course.id,UUID.randomUUID().toString(),"解释集合"))))
+          .andExpect(request().asyncStarted()).andReturn();
+      result.getAsyncResult(10000);
+      var response=mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
+          .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+      assertTrue(response.contains("event:error"));
+      assertFalse(response.contains("event:done"));
+      assertFalse(response.contains("private-provider-payload"));
+      as(a);
+      guard.acquire(); guard.release(a.id);
+      assertNotNull(courses.detail(course.id));
+    }
+  }
+
+  @Test
   void tutorStreamsSourcesTokensAndDone() throws Exception {
     var result =
         mvc.perform(

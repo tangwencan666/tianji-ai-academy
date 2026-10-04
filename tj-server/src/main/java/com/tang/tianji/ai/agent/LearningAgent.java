@@ -42,9 +42,14 @@ public class LearningAgent {
   }
 
   public Object run(Plan d) {
+    return run(d, s -> {});
+  }
+
+  public Object run(Plan d, java.util.function.Consumer<String> status) {
     c.access(d.courseId());
     var t = new LearningTools(l, e, c, d.courseId());
     var s = new LearningAgentState();
+    s.onStep = status;
     s.userGoal = d.goal();
     s.courseId = d.courseId();
     s.step("获取课程进度");

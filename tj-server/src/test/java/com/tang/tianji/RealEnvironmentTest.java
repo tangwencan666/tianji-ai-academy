@@ -49,7 +49,16 @@ class RealEnvironmentTest {
       assertNotNull(((Map<?, ?>) tools.getLearningTimeStatistics()).get("todaySeconds"));
       assertEquals(8, ((List<?>) tools.getRecommendedLessons()).size());
       UserContext.set(new UserContext.Principal(teacher.id, teacher.role));
-      assertEquals(16, ((List<?>) stats.wrong(course.id)).size());
+      // Real demo data grows after explicit AI draft/short-answer acceptance.
+      // Assert course membership against the current teacher-visible bank, not a seed count.
+      var expectedIds = new HashSet<>(exams.bank(course.id, true).stream().map(q -> q.id).toList());
+      var actualIds = new HashSet<Long>();
+      for (Object item : (List<?>) stats.wrong(course.id)) {
+        var row = (Map<?, ?>) item;
+        actualIds.add(((Number) row.get("question_id")).longValue());
+        assertTrue(((Number) row.get("wrong_count")).longValue() >= 0);
+      }
+      assertEquals(expectedIds, actualIds);
       assertEquals(8, ((List<?>) stats.weak(course.id)).size());
     } finally {
       UserContext.clear();

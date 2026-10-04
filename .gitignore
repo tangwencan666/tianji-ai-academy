@@ -3,6 +3,11 @@ node_modules/
 dist/
 .env
 *.log
+logs/
+*.pid
+.vscode/
+*.iml
+*.tmp
 .idea/
 .DS_Store
 work/

@@ -26,7 +26,7 @@ spring:
       base-url: ${AI_BASE_URL:https://api.deepseek.com}
       chat:
         options:
-          model: ${AI_MODEL:deepseek-chat}
+          model: ${AI_MODEL:deepseek-flash}
           temperature: 0.4
           max-tokens: 4096
       embedding:
@@ -48,5 +48,7 @@ management:
 app:
   jwt-secret: ${JWT_SECRET}
   ai-enabled: ${AI_ENABLED:false}
-  embedding-model: ${EMBEDDING_MODEL:text-embedding-3-small}
+  ai-mode: ${AI_MODE:disabled}
+  embedding-mode: ${EMBEDDING_MODE:lexical}
+  embedding-model: ${EMBEDDING_MODEL:local-lexical-hash-v1}
   zone: Asia/Shanghai

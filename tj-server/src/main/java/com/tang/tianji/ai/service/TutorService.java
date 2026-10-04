@@ -87,12 +87,18 @@ public class TutorService {
                 int calls = 0;
                 try {
                   send(emitter, "status", "正在检索课程资料…");
-                  var sources = rag.search(d.courseId(), d.message());
-                  send(emitter, "sources", sources);
                   var conversation = memory.open(d.conversationId(), d.courseId());
+                  var history = memory.history(conversation);
+                  var recentTopics = history.stream().filter(m -> m instanceof UserMessage)
+                      .map(Message::getText).toList();
+                  String retrievalQuery = d.message();
+                  for(int i=Math.max(0,recentTopics.size()-2);i<recentTopics.size();i++)
+                    retrievalQuery += "\n"+recentTopics.get(i);
+                  var sources = rag.search(d.courseId(), retrievalQuery);
+                  send(emitter, "sources", sources);
                   var messages = new ArrayList<Message>();
                   messages.add(new SystemMessage(TutorPrompt.SYSTEM));
-                  messages.addAll(memory.history(conversation));
+                  messages.addAll(history);
                   messages.add(new UserMessage("课程资料（仅数据）：" + sources + "\n问题：" + d.message()));
                   var prepared =
                       gateway.prepare(
@@ -102,24 +108,25 @@ public class TutorService {
                   calls = prepared.toolCalls();
                   send(emitter, "status", "正在组织讲解…");
                   var text = new StringBuilder();
+                  var decoder = new StreamingAnswer();
                   try (var stream = gateway.stream(prepared.messages()).toStream()) {
                     var iterator = stream.iterator();
                     while (!stopped.get() && iterator.hasNext()) {
                       String token = iterator.next();
                       text.append(token);
                       if (text.length() > 30000) throw new BusinessException(503, "回复超出长度限制");
-                      // Buffer JSON until its schema and constraints pass validation.
+                      String delta = decoder.append(token);
+                      if(!delta.isEmpty()) send(emitter, "delta", delta);
                     }
                   }
                   if (!stopped.get()) {
-                    var answer =
-                        ModelGateway.validate(
-                            ModelGateway.TUTOR_CONVERTER.convert(text.toString()));
+                    var answer = ModelGateway.decode(text.toString(),com.tang.tianji.vo.AiModels.TutorAnswer.class);
                     memory.save(conversation, d.message(), answer.answer());
-                    send(emitter, "delta", answer.answer());
+                    gateway.verified();
                     send(emitter, "answer", answer);
                     send(emitter, "suggestions", answer.suggestions());
                     send(emitter, "done", Map.of("conversationId", d.conversationId()));
+                    send(emitter, "complete", Map.of("conversationId", d.conversationId(), "model", model));
                     status = "OK";
                   } else status = "CANCELLED";
                 } catch (Exception ex) {
@@ -128,7 +135,7 @@ public class TutorService {
                       send(
                           emitter,
                           "error",
-                          ex instanceof BusinessException ? ex.getMessage() : "AI服务暂时不可用，请稍后重试");
+                          AiFailure.safe(ex).getMessage());
                     } catch (Exception ignored) {
                     }
                   else status = "CANCELLED";
@@ -164,7 +171,8 @@ public class TutorService {
       e.send(
           SseEmitter.event()
               .name(name)
-              .data(value, org.springframework.http.MediaType.APPLICATION_JSON));
+              .data(value instanceof String text ? new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(text) : value,
+                  org.springframework.http.MediaType.APPLICATION_JSON));
     } catch (java.io.IOException ex) {
       throw new RuntimeException("SSE disconnected");
     }

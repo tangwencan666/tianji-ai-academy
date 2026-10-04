@@ -2,11 +2,11 @@
 
 Java 多模块 + Vue 3 的在线学习与 AI 辅助平台。在原项目上继续完善，没有重建或增加页面数量。
 
-**当前状态：代码完成但真实环境待验证。** MySQL、Redis 和非 AI 前后端闭环已真实验收；尚缺真实聊天/Embedding 密钥，Docker Desktop 的 WSL 引擎启动失败，不能宣称 AI 全链路和容器部署通过。
+**当前状态：真实 DeepSeek 已接通。** Tutor、工具调用、Memory、计划、题目草稿、错题讲解、周报和简答题建议已取得真实 API 结果。Chrome 本轮完整操作验收仍待连接；Docker 运行验收仍保留原有限制。逐项证据见 [真实 AI 验收](docs/REAL_AI_VERIFICATION.md)，不将本地词法向量称为神经 Embedding。
 
 ## 验证结果与截图
 
-- 后端 35 项 H2/单元测试通过，另 1 项显式启用的真实 MySQL 工具集成测试通过。
+- 本轮后端44项普通测试：43通过、1项真实MySQL可选测试跳过；前端4项测试及构建通过。另1项显式真实MySQL只读工具测试通过；本轮AI证据单独记录。
 - 最新真实 HTTP 回归 39 项通过，报告在 [mysql-http-verification.json](docs/mysql-http-verification.json)。最终计数以报告为准。
 - MySQL 8.0.44 空库自动应用 V1、V2；共 22 张业务表和 1 张 Flyway 表、82 个索引、22 个外键、9 个唯一约束。
 - Redis 3.0.504：真实回填、命中、修改课程后失效；前端 build 通过。
@@ -93,35 +93,40 @@ DevSeed 仅 `dev` + `DEV_SEED=true` 生效，密码由 `DEMO_PASSWORD` 提供；
 
 ## AI Provider、RAG、工具与计划
 
-在运行后端的终端自行设置密钥环境变量，然后重启后端：
+在已安全加载 AI_API_KEY、DB_PASSWORD 的 PowerShell 中启动：
 
 ```powershell
-$env:AI_ENABLED='true'
 $env:AI_BASE_URL='https://api.deepseek.com'
-$env:AI_MODEL='deepseek-chat'
-# AI_API_KEY 自行安全设置，禁止提交
-$env:EMBEDDING_BASE_URL='https://api.openai.com'
-$env:EMBEDDING_MODEL='text-embedding-3-small'
-# EMBEDDING_API_KEY 自行安全设置，禁止提交
+$env:AI_MODEL='deepseek-flash'
+./scripts/Start-DeepSeek.ps1
+# 仅重启本脚本记录且身份匹配的进程：
+./scripts/Start-DeepSeek.ps1 -Restart
 ```
 
-聊天与 Embedding 是独立服务配置，聊天供应商不一定提供 Embedding。默认基础地址不带 `/v1`，客户端端点会追加 `/v1/chat/completions` 和 `/v1/embeddings`；其他兼容供应商请核对端点，不能重复拼接前缀。
+脚本优先使用当前环境变量，设置 AI_ENABLED=true、AI_MODE=live、dev profile；默认前端 15175、后端 18273。使用现有 tianji_ai_academy，禁用迁移与 seed，不重建数据库。不提供密钥时明确失败，绝不自动回退 Mock。JWT 未设置时生成进程内随机密钥，重启后重新登录。
 
-知识文档在 `knowledge/java/`：变量、流程、集合、异常、线程、Spring、MySQL、Redis。课程讲义由相同内容打包在 `seed/courses.json`。教师可在知识库导入，或显式执行下面的真实验收脚本（会消耗模型额度、写入该演示课程的知识块/草稿/个人计划）：
+可选参数 `-LegacyEnvPath '<用户自行指定的本地.env路径>'` 仅读取 LLM_API_KEY、LLM_BASE_URL、LLM_MODEL 作为缺失变量的兼容来源，不复制文件内容，不默认依赖个人路径。`-JavaHome`、`-MavenSettings` 可适配已有工具。基础地址须为 DeepSeek 官方 HTTPS 地址，脚本校验路径；实际模型以 provider 与官方响应为准。不要提交真实 .env。
+
+启动不调用模型。显式最小验证使用 `Test-AiLive.ps1`，真实验收与普通测试分离：
 
 ```powershell
-$env:TIANJI_API='http://127.0.0.1:8080/api'
-$env:DEMO_PASSWORD='TianjiDemo_2026!'
-python scripts/verify_ai.py
+$env:DEMO_PASSWORD='TianjiDemo_2026!' # 仅本地演示账号
+$env:TIANJI_API='http://127.0.0.1:15175/api'
+python scripts/verify_real_ai.py --phase tutor
+# 可分别选择 setup/tools/memory/structured/grading/cancel/security；逐项执行，避免重复费用。
 ```
 
-RAG：Document → 900 字符 chunk、700 步长 → 真实 Embedding → MySQL JSON 向量 → 按课程/模型过滤 → 余弦 Top-5 → Prompt。当前为小课程精确检索，不是 ANN 向量数据库。无密钥时不会写入伪向量。
+首次先以已登录的内存 token 调用 `/api/ai/probe` 或 Test-AiLive.ps1 的后端模式，只发送一次“你好”。provider 仅在当前进程成功调用后显示“真实模型 · 已验证”。不记录或展示 token。
 
-Tools：七个 `LearningTools` 不接收 userId，读取 JWT/UserContext 当前用户的进度、错题、掌握度、考试、时长、推荐课时；Tutor 模型可以选择调用工具，最多 8 次。Memory 按用户+会话隔离，只保留 20 条消息。
+RAG：讲义 → 900 字符分块、700 步长 → **本地词法特征哈希向量** → MySQL JSON → SQL 按课程和向量模型过滤 → 余弦 Top-5 → Prompt。默认 EMBEDDING_MODE=lexical、EMBEDDING_MODEL=local-lexical-hash-v1，不产生 Embedding 费用。这是可复现的关键词检索，不能替代神经语义向量；远程 Embedding 是独立可选配置，尚未真实验收。无资料时回答会说明使用通用知识。
 
-Structured Output：Spring AI 对象映射 → Jakarta Validation → 业务规则 → 保存。TutorAnswer 使用 SSE 接收模型 JSON，完整验证后发送回答事件，避免把畸形 JSON 当作完成答案；当前正文在校验后一次呈现，状态事件仍实时发送。
+七个 LearningTools 不接收模型传入的 userId，通过 JWT/UserContext 读取真实 MySQL 当前用户进度、错题、掌握度、考试、时长、推荐课时；Tutor 最多调用 8 次。Memory 按用户、会话、课程隔离，只保留最近 20 条消息，追问检索结合近期主题。
 
-Learning Agent 为 8 步显式工作流：读取真实数据、检索、生成、校验日期/时长/课时、保存计划。前端显示业务步骤和日卡，步骤列表在任务结束后返回。AI 题默认 AI_GENERATED，教师确认后才能入卷；AI 简答题建议始终 NEEDS_REVIEW，不自动改最终分数。
+Structured Output：模型 JSON → 完整性检查 → 严格解析 → Jakarta Validation → 业务规则 → 保存。计划与题目集合上限 8192 tokens，其他结果 4096；达到长度上限明确失败，不保存半截数据，不输出原始失败响应到日志。
+
+Tutor SSE 根据实际模型 chunk 增量解码 answer；完成时校验整个结构并发送 answer、suggestions、done、complete。畸形响应/上游错误清除未完成正文，取消关闭请求，45 秒无新输出或总时限超出终止。Agent 的真实业务步骤也通过 SSE 发送，不展示虚构思考过程。
+
+Learning Agent 执行读取进度、考试、错题、掌握度、检索、生成、Java 校验、保存八步。计划按当前用户保存；日期、时长与课程课时归属均校验。AI 题保留 AI_GENERATED，教师审核后才能进入试卷；AI 简答题建议保持 NEEDS_REVIEW，不自动修改正式成绩。正式考试进行时禁止 Tutor 等学习辅助。
 
 ## Redis 与 Docker
 
@@ -147,6 +152,7 @@ Compose 会优先使用当前终端的环境变量；Docker 凭据请在独立�
 ```powershell
 mvn test
 cd tj-web
+npm test
 npm run build
 # 回到根目录；需运行 dev 后端与本机 redis-cli，显式演示账号密码
 $env:TIANJI_API='http://127.0.0.1:8080/api'

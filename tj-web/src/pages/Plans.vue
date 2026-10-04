@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { api } from "../api";
+import { api, streamAi } from "../api";
 import CourseSelect from "../components/CourseSelect.vue";
 const course = ref(null),
   goal = ref("准备 Java 后端面试，巩固基础并完成练习"),
@@ -10,6 +10,7 @@ const course = ref(null),
   plans = ref([]),
   selected = ref(null),
   steps = ref([]);
+const status=ref(''),error=ref('');
 async function load() {
   plans.value = await api.get("/study-plans");
   if (plans.value.length && !selected.value) await open(plans.value[0].id);
@@ -21,18 +22,28 @@ async function open(id) {
 async function generate() {
   busy.value = true;
   steps.value = [];
+  error.value='';
   try {
-    const r = await api.post("/ai/plans", {
+    let r;
+    await streamAi('/ai/plans/stream', {
       courseId: course.value,
       goal: goal.value,
       days: days.value,
       dailyMinutes: minutes.value,
+    },(name,value)=>{
+      if(name==='status')status.value=value;
+      if(name==='result')r=value;
+      if(name==='error')throw new Error(value);
     });
+    if(!r)throw new Error('未收到已验证的计划');
     steps.value = r.steps;
     await open(r.plan.id);
     await load();
+  } catch(e) {
+    error.value=e.message;
   } finally {
     busy.value = false;
+    status.value='';
   }
 }
 async function done(d) {
@@ -72,12 +83,13 @@ function decode(v) {
       >✧ 生成学习计划</el-button
     >
     <p v-if="busy" class="quiet">
-      正在分析学习记录并校验计划，通常需要一些时间…
+      {{status || '正在连接学习助手…'}}
     </p>
   </div>
   <div v-if="steps.length" class="steps">
     <span v-for="(s, i) in steps" :key="s">✓ {{ i + 1 }}. {{ s }}</span>
   </div>
+  <p v-if="error" class="error-text">{{error}}</p>
   <div class="toolbar spaced">
     <el-button
       v-for="p in plans"

@@ -23,7 +23,7 @@ public class AiGuard {
 
   public void check() {
     exams.noActive();
-    BusinessException.check(enabled, 503, "AI尚未启用，请配置模型与Embedding密钥；课程和考试可正常使用");
+    BusinessException.check(enabled, 503, "AI尚未启用，请配置真实模型；课程和考试可正常使用");
   }
 
   @Transactional

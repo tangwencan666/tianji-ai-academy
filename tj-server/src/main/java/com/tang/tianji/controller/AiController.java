@@ -24,6 +24,8 @@ public class AiController {
   private final CourseVectorStore rag;
   private final ConversationMemory memory;
   private final StudyPlanService plans;
+  private final AiProviderState provider;
+  private final ModelGateway gateway;
 
   public AiController(
       TutorService t,
@@ -33,7 +35,9 @@ public class AiController {
       CourseVectorStore r,
       ConversationMemory m,
       StudyPlanService p,
-      AiJobRunner jobs) {
+      AiJobRunner jobs, AiProviderState provider, ModelGateway gateway) {
+    this.provider = provider;
+    this.gateway = gateway;
     this.jobs = jobs;
     tutor = t;
     app = a;
@@ -47,6 +51,13 @@ public class AiController {
   private Object run(Supplier<Object> action) {
     return Result.ok(jobs.run(action));
   }
+
+  @GetMapping("/ai/provider")
+  public Object provider() { return Result.ok(provider.status()); }
+
+  /** Explicit opt-in, one short paid call. Startup/status reads never invoke the model. */
+  @PostMapping("/ai/probe")
+  public Object probe() { return run(gateway::probe); }
 
   @PostMapping(value = "/ai/tutor/chat", produces = "text/event-stream")
   public SseEmitter chat(@Valid @RequestBody Chat d) {
@@ -86,6 +97,11 @@ public class AiController {
   @PostMapping("/ai/plans")
   public Object plan(@Valid @RequestBody Plan d) {
     return run(() -> agent.run(d));
+  }
+
+  @PostMapping(value="/ai/plans/stream",produces="text/event-stream")
+  public SseEmitter planStream(@Valid @RequestBody Plan d) {
+    return jobs.stream(status -> agent.run(d,status));
   }
 
   @PostMapping("/ai/teacher/outline")

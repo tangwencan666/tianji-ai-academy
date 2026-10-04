@@ -330,6 +330,14 @@ public class ExamService {
             .last("LIMIT 50"));
   }
 
+  public List<ExamRecord> history(long course) {
+    courses.access(course);
+    var ids=exams.selectList(new QueryWrapper<Exam>().eq("course_id",course)).stream().map(e->e.id).toList();
+    if(ids.isEmpty()) return List.of();
+    return records.selectList(new QueryWrapper<ExamRecord>().eq("user_id",UserContext.getCurrentUserId())
+        .in("exam_id",ids).orderByDesc("id").last("LIMIT 50"));
+  }
+
   public List<WrongQuestion> wrongs() {
     return wrongs.selectList(
         new QueryWrapper<WrongQuestion>()

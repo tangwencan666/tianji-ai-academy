@@ -32,22 +32,24 @@ public class LearningTools {
 
   @Tool(description = "查询当前用户最近错题，不接受用户ID")
   public Object getRecentWrongQuestions() {
-    return exams.wrongs();
+    return exams.wrongDetails().stream()
+        .filter(x -> ((com.tang.tianji.entity.Question)x.get("question")).courseId == course)
+        .toList();
   }
 
   @Tool(description = "查询Java统计的当前用户知识点掌握度")
   public Object getWeakKnowledgePoints() {
-    return exams.mastery();
+    return exams.mastery().stream().filter(x -> ((Number)x.get("courseId")).longValue()==course).toList();
   }
 
   @Tool(description = "查询当前用户最近考试结果")
   public Object getRecentExamResults() {
-    return exams.history();
+    return exams.history(course);
   }
 
   @Tool(description = "查询当前用户最近七天学习时长")
   public Object getLearningTimeStatistics() {
-    return learning.time();
+    return learning.time(course);
   }
 
   @Tool(description = "查询当前课程真实可学习课时")
