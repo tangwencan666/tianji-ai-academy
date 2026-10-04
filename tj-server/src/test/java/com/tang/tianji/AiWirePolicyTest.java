@@ -12,6 +12,17 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.http.HttpStatus;
 
 class AiWirePolicyTest {
+  @Test void explicitMockIsOfflineAndCannotClaimRealVerification() {
+    var model=new MockAiConfig().offlineDemoChatModel();
+    var prompt=new org.springframework.ai.chat.prompt.Prompt("你好");
+    assertTrue(model.call(prompt).getResult().getOutput().getText().contains("Mock演示"));
+    assertEquals(1,model.stream(prompt).collectList().block().size());
+    var state=new AiProviderState(true,"mock","offline-demo","local-lexical-hash-v1");
+    state.success();
+    assertEquals(false,state.status().get("verified"));
+    assertEquals("Mock演示",state.status().get("label"));
+    assertEquals("offline-demo",state.status().get("model"));
+  }
   @Test void incompleteOrExtraJsonIsRejectedWithoutEchoingModelContent() {
     for (String text : List.of("{\"answer\":\"private-model-output",
         "{\"answer\":\"private-model-output\",\"suggestions\":[]} {}",

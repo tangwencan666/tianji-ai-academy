@@ -18,8 +18,8 @@ public class AiProviderState {
   }
   public void success() { if(enabled && "live".equals(mode)) verified.set(true); }
   public Map<String,Object> status() {
-    return Map.of("enabled",enabled,"mode",enabled?mode:"disabled","provider","DeepSeek",
-        "model",model,"verified",verified.get(),"embedding",embedding,
-        "label",!enabled?"AI未启用":verified.get()?"真实模型 · 已验证":"真实模型 · 待验证");
+    return Map.of("enabled",enabled,"mode",enabled?mode:"disabled","provider","mock".equals(mode)?"Local Mock":"DeepSeek",
+        "model","mock".equals(mode)?"offline-demo":model,"verified",verified.get(),"embedding",embedding,
+        "label",!enabled?"AI未启用":"mock".equals(mode)?"Mock演示":verified.get()?"真实模型 · 已验证":"真实模型 · 待验证");
   }
 }
