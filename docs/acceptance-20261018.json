@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "0ba997cc068988f435553c71a9d6c1fe55c51bfb",
+  "scope": "documentation acceptance only",
+  "real_model_requests": 0,
+  "business_tests_rerun": false,
+  "historical_evidence": [
+    {
+      "date_or_version": "2026-10-04 发布复验",
+      "scope": "后端45项中44通过1跳过，前端4；普通模型为Mock",
+      "evidence": "docs/REAL_AI_VERIFICATION.md",
+      "sha256": "fd36abcdbf4af227968d9930d0fa4259533053707ee495cee67c00ad8c3ca9e2",
+      "containing_source_snapshot": "0ba997cc068988f435553c71a9d6c1fe55c51bfb",
+      "binding": "hash identifies retained evidence in this source snapshot; does not assert the historical run used current working tree"
+    },
+    {
+      "date_or_version": "2026-10-04 真实AI专项",
+      "scope": "有限API/SSE；远程神经Embedding和完整Chrome流程未完成",
+      "evidence": "docs/REAL_AI_VERIFICATION.md",
+      "sha256": "fd36abcdbf4af227968d9930d0fa4259533053707ee495cee67c00ad8c3ca9e2",
+      "containing_source_snapshot": "0ba997cc068988f435553c71a9d6c1fe55c51bfb",
+      "binding": "hash identifies retained evidence in this source snapshot; does not assert the historical run used current working tree"
+    },
+    {
+      "date_or_version": "2026-10-03 早期快照",
+      "scope": "35项及NOT_RUN_NO_KEYS属于早期记录，不覆盖后续记录",
+      "evidence": "docs/test-summary.json",
+      "sha256": "7e6687dbc40e3a66f41d5067f45d53aa9c93d4b9350ad3a78fed8b510b613352",
+      "containing_source_snapshot": "0ba997cc068988f435553c71a9d6c1fe55c51bfb",
+      "binding": "hash identifies retained evidence in this source snapshot; does not assert the historical run used current working tree"
+    }
+  ]
+}
